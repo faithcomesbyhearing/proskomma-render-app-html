@@ -10,6 +10,10 @@ if (process.argv.length !== 3) {
 
 const srcDirPath = process.argv[2];
 
+if (!fse.pathExists(srcDirPath)) {
+    throw new Error(`Source directory '${srcDirPath}' not found`);
+}
+
 const succinct = fse.readJsonSync(path.resolve(path.join(srcDirPath, "succinct.json")));
 const pk = new UWProskomma();
 pk.loadSuccinctDocSet(succinct);
