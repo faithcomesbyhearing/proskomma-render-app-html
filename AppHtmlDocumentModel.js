@@ -10,6 +10,7 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
         this.appData = {
             documentDir: null,
             chapter: null,
+            verses: null,
             chapterContent: null,
         };
         this.addActions();
@@ -40,6 +41,9 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
                 renderer.appData.chapterContent = [
                     htmlResources.startHtml({
                         title: `${context.document.headers.bookCode} ${renderer.appData.chapter}`
+                    }),
+                    htmlResources.chapterNumber({
+                        n: renderer.appData.chapter,
                     })
                 ];
             }
@@ -55,6 +59,21 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
                 fse.writeFileSync(chapterPath, renderer.appData.chapterContent.join(''));
             }
         );
+
+        // Start of verses
+        this.addAction(
+            'scope',
+            (context, data) => data.subType === 'start' && data.payload.startsWith("verses/"),
+            (renderer, context, data) => {
+                renderer.appData.verses = data.payload.split('/')[1];
+                renderer.appData.chapterContent.push(
+                    htmlResources.verseNumber({
+                        n: renderer.appData.verses
+                    })
+                );
+            },
+        );
+
 
     }
 
