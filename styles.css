@@ -1,8 +1,39 @@
 .chapterNumber {
+    float: left;
     font-size: xx-large
 }
 .verseNumber {
     font-weight: bold;
     font-size: smaller;
     padding-right: 0.5em;
+}
+.usfm_p {
+    text-indent: 0.5em;
+}
+.usfm_q {
+    margin-left: 2em;
+}
+.usfm_q2 {
+    margin-left: 3em;
+}
+.usfm_q3 {
+    margin-left: 4em;
+}
+.usfm_wj {
+    color: red;
+}
+.usfm_it {
+    font-style: italic;
+}
+.usfm_qs {
+    font-style: italic;
+}
+.usfm_bd {
+    font-weight: bold;
+}
+.usfm_sc {
+    font-variant: small-caps;
+}
+.usfm_sls {
+    font-style: italic;
 }

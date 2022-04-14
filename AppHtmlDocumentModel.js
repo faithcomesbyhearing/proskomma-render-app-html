@@ -146,6 +146,51 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
             }
         );
 
+        // Start character-level markup (span)
+        this.addAction(
+            'scope',
+            (context, data) => data.subType === 'start' && data.payload.startsWith("span/"),
+            (renderer, context, data) => {
+                const spanType = data.payload.split('/')[1];
+                if (!['wj', 'it', 'qs', 'bd', 'sc', 'sls'].includes(spanType)) {
+                    console.log(`WARNING: unexpected character-level tag ${spanType}`);
+                }
+                renderer.appData.pageContent.push(
+                    htmlResources.startCharacterSpan({spanType})
+                );
+            }
+        );
+
+        // End character-level markup (span)
+        this.addAction(
+            'scope',
+            (context, data) => data.subType === 'end' && data.payload.startsWith("span/"),
+            (renderer, context, data) => {
+                renderer.appData.pageContent.push(
+                    htmlResources.endCharacterSpan({spanType: data.payload.split('/')[1]})
+                );
+            }
+        );
+
+        // Token
+        this.addAction(
+            'token',
+            () => true,
+            (renderer, context, data) => {
+                if (["lineSpace", "eol"].includes(data.subType)) {
+                    renderer.appData.pageContent.push(" ");
+                } else {
+                    renderer.appData.pageContent.push(
+                        data.payload
+                            .replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                    )
+                    ;
+                }
+            }
+        );
+
     }
 
 };
