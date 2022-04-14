@@ -11,16 +11,17 @@ if (process.argv.length !== 3) {
 
 const srcDirPath = process.argv[2];
 const toRenderPath = path.resolve(path.join(srcDirPath, "toRender.json"));
-if (!fse.pathExists(toRenderPath)) {
+if (!fse.pathExistsSync(toRenderPath)) {
     throw new Error(`toRenderJson not found in '${srcDirPath}': generate this using make_render_json.js`);
 }
 const toRender = fse.readJsonSync(toRenderPath);
 
-const context = {};
-const config = {};
-const documentModel = new AppHtmlDocumentModel(toRender, context, config);
-const docSetModel = new AppHtmlDocSetModel(toRender, context, config);
+const config = {
+    targetDir: path.resolve(path.join(srcDirPath, "chapters")),
+};
 const processingModel = new ScriptureParaModel(toRender, config);
+const docSetModel = new AppHtmlDocSetModel(toRender, processingModel.context, config);
+const documentModel = new AppHtmlDocumentModel(docSetModel.result, docSetModel.context, docSetModel.config);
 docSetModel.addDocumentModel('default', documentModel);
 processingModel.addDocSetModel('default', docSetModel);
 

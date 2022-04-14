@@ -10,7 +10,7 @@ if (process.argv.length !== 3) {
 
 const srcDirPath = process.argv[2];
 
-if (!fse.pathExists(srcDirPath)) {
+if (!fse.pathExistsSync(srcDirPath)) {
     throw new Error(`Source directory '${srcDirPath}' not found`);
 }
 
