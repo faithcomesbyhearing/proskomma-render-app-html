@@ -18,6 +18,30 @@ const endHtml = () => `</div>
 `;
 
 const chapterNumber = ({n}) => `<span class="chapterNumber">${n}</span>`;
+
 const verseNumber = ({n}) => `<span class="verseNumber">${n}</span>`;
 
-export {startHtml, endHtml, chapterNumber, verseNumber};
+const startVerses = () => `<span class="verses">`;
+
+const endVerses = () => `</span>\n`;
+
+const startVersesContent = () => `<span class="versesContent">`;
+
+const endVersesContent = () => `</span>\n`;
+
+const startBlock = ({blockType}) => `<div class="usfm_${blockType}">\n`;
+
+const endBlock = () => `</div>\n`;
+
+export {
+    startHtml,
+    endHtml,
+    chapterNumber,
+    verseNumber,
+    startVerses,
+    endVerses,
+    startVersesContent,
+    endVersesContent,
+    startBlock,
+    endBlock,
+};

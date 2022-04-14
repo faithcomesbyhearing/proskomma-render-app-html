@@ -11,7 +11,8 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
             documentDir: null,
             chapter: null,
             verses: null,
-            chapterContent: null,
+            pageContent: [],
+            waitingForChapter: [],
         };
         this.addActions();
     }
@@ -38,42 +39,112 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
             (context, data) => data.subType === 'start' && data.payload.startsWith("chapter/"),
             (renderer, context, data) => {
                 renderer.appData.chapter = data.payload.split('/')[1];
-                renderer.appData.chapterContent = [
+                renderer.appData.pageContent = [
                     htmlResources.startHtml({
                         title: `${context.document.headers.bookCode} ${renderer.appData.chapter}`
                     }),
+                    ...renderer.appData.waitingForChapter,
                     htmlResources.chapterNumber({
                         n: renderer.appData.chapter,
                     })
                 ];
+                renderer.appData.waitingForChapter = [];
             }
         );
 
-        // End of chapter
+        // End chapter
         this.addAction(
             'scope',
             (context, data) => data.subType === 'end' && data.payload.startsWith("chapter/"),
             (renderer, context, data) => {
-                renderer.appData.chapterContent.push(htmlResources.endHtml());
+                renderer.appData.pageContent.push(
+                    htmlResources.endBlock()
+                );
+                renderer.appData.pageContent.push(htmlResources.endHtml());
                 const chapterPath = path.join(renderer.appData.docDir, `ch_${renderer.appData.chapter}.xhtml`);
-                fse.writeFileSync(chapterPath, renderer.appData.chapterContent.join(''));
+                fse.writeFileSync(chapterPath, renderer.appData.pageContent.join(''));
+                renderer.appData.pageContent = [];
+                renderer.appData.chapter = null;
             }
         );
 
-        // Start of verses
+        // Start verses
         this.addAction(
             'scope',
             (context, data) => data.subType === 'start' && data.payload.startsWith("verses/"),
             (renderer, context, data) => {
                 renderer.appData.verses = data.payload.split('/')[1];
-                renderer.appData.chapterContent.push(
+                renderer.appData.pageContent.push(
+                    htmlResources.startVerses()
+                );
+                renderer.appData.pageContent.push(
                     htmlResources.verseNumber({
                         n: renderer.appData.verses
                     })
                 );
+                renderer.appData.pageContent.push(
+                    htmlResources.startVersesContent()
+                );
             },
         );
 
+        // End verses
+        this.addAction(
+            'scope',
+            (context, data) => data.subType === 'end' && data.payload.startsWith("verses/"),
+            (renderer, context, data) => {
+                renderer.appData.pageContent.push(
+                    htmlResources.endVersesContent()
+                );
+                renderer.appData.pageContent.push(
+                    htmlResources.endVerses()
+                );
+                renderer.appData.verses = null;
+            },
+        );
+
+        // Start block
+        this.addAction(
+            'startBlock',
+            () => true,
+            (renderer, context, data) => {
+                const blockType = data.bs.payload.split("/")[1];
+                renderer.appData[renderer.appData.chapter ? 'pageContent' : 'waitingForChapter'].push(
+                    htmlResources.startBlock({
+                        blockType,
+                    })
+                );
+                if (renderer.appData.verses) {
+                    renderer.appData.pageContent.push(
+                        htmlResources.startVerses()
+                    );
+                    renderer.appData.pageContent.push(
+                        htmlResources.startVersesContent()
+                    );
+                }
+            }
+        );
+
+        // End block
+        this.addAction(
+            'endBlock',
+            () => true,
+            (renderer, context, data) => {
+                if (renderer.appData.chapter) {
+                    if (renderer.appData.verses) {
+                        renderer.appData.pageContent.push(
+                            htmlResources.endVersesContent()
+                        );
+                        renderer.appData.pageContent.push(
+                            htmlResources.endVerses()
+                        );
+                    }
+                    renderer.appData.pageContent.push(
+                        htmlResources.endBlock()
+                    );
+                }
+            }
+        );
 
     }
 
