@@ -141,7 +141,8 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
             'startItems',
             (context) => true,
             (renderer, context, data) => {
-                const blockType = context.sequenceStack[0].block.blockScope.split("/")[1];
+                const blockTag = context.sequenceStack[0].block.blockScope;
+                const blockType = blockTag.split("/")[1] || blockTag;
                 if (!renderer.config.supportedBlockTags.includes(blockType)) {
                     console.log(`WARNING: unexpected blockTag ${blockType}`);
                 }
