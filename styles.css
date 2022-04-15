@@ -4,14 +4,16 @@
     float: left;
     font-size: xx-large
 }
-.verseNumber {
+.versesNumber {
     font-weight: bold;
     font-size: smaller;
     padding-right: 0.5em;
 }
 
 /* BlockTags (USFM paras)*/
-
+.usfm_b {
+    height: 1em; /* Empty para */
+}
 .usfm_d {
     font-style: italic;
 }
@@ -23,6 +25,18 @@
 }
 .usfm_pc {
     text-align: center;
+}
+.usfm_pi {
+    margin-left: 2em;
+    text-indent: 0.5em;
+}
+.usfm_pi2 {
+    margin-left: 3em;
+    text-indent: 0.5em;
+}
+.usfm_pi3 {
+    margin-left: 4em;
+    text-indent: 0.5em;
 }
 .usfm_q {
     margin-left: 2em;

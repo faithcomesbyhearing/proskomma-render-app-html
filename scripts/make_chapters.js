@@ -18,7 +18,7 @@ const toRender = fse.readJsonSync(toRenderPath);
 
 const config = {
     targetDir: path.resolve(path.join(srcDirPath, "chapters")),
-    supportedBlockTags: ['d', 'm', 'p', 'pc', 'q', 'q2', 'q3', 'q4', 'qa'],
+    supportedBlockTags: ['b', 'd', 'm', 'p', 'pc', 'pi', 'q', 'q2', 'q3', 'q4', 'qa'],
     supportedSpans: ['wj', 'it', 'qs', 'bd', 'sc', 'sls'],
 };
 const processingModel = new ScriptureParaModel(toRender, config);

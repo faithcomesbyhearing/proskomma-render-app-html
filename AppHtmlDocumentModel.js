@@ -41,11 +41,12 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
                 renderer.appData.chapter = data.payload.split('/')[1];
                 renderer.appData.pageContent = [
                     htmlResources.startHtml({
-                        title: `${context.document.headers.bookCode} ${renderer.appData.chapter}`
+                        title: `${context.document.headers.toc2 || context.document.headers.toc3 || context.document.headers.bookCode} ${renderer.appData.chapter}`
                     }),
                     ...renderer.appData.waitingForChapter,
                     htmlResources.chapterNumber({
-                        n: renderer.appData.chapter,
+                        b: context.document.headers.bookCode,
+                        c: renderer.appData.chapter,
                     })
                 ];
                 renderer.appData.waitingForChapter = [];
@@ -75,15 +76,25 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
             (renderer, context, data) => {
                 renderer.appData.verses = data.payload.split('/')[1];
                 renderer.appData.pageContent.push(
-                    htmlResources.startVerses()
-                );
-                renderer.appData.pageContent.push(
-                    htmlResources.verseNumber({
-                        n: renderer.appData.verses
+                    htmlResources.startVerses({
+                        b: context.document.headers.bookCode,
+                        c: renderer.appData.chapter,
+                        v: renderer.appData.verses,
                     })
                 );
                 renderer.appData.pageContent.push(
-                    htmlResources.startVersesContent()
+                    htmlResources.verseNumber({
+                        b: context.document.headers.bookCode,
+                        c: renderer.appData.chapter,
+                        v: renderer.appData.verses
+                    })
+                );
+                renderer.appData.pageContent.push(
+                    htmlResources.startVersesContent({
+                        b: context.document.headers.bookCode,
+                        c: renderer.appData.chapter,
+                        v: renderer.appData.verses,
+                    })
                 );
             },
         );
@@ -119,10 +130,18 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
                 );
                 if (renderer.appData.verses) {
                     renderer.appData.pageContent.push(
-                        htmlResources.startVerses()
+                        htmlResources.startVerses({
+                            b: context.document.headers.bookCode,
+                            c: renderer.appData.chapter,
+                            v: renderer.appData.verses,
+                        })
                     );
                     renderer.appData.pageContent.push(
-                        htmlResources.startVersesContent()
+                        htmlResources.startVersesContent({
+                            b: context.document.headers.bookCode,
+                            c: renderer.appData.chapter,
+                            v: renderer.appData.verses,
+                        })
                     );
                 }
             }

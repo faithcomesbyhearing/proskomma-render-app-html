@@ -16,23 +16,23 @@ const endHtml = () => `    </div>
 </html>
 `;
 
-const chapterNumber = ({n}) => `<span class="chapterNumber">${n}</span>`;
+const chapterNumber = ({b, c}) => `<span class="chapterNumber cn_${b}_${c}">${c}</span>`;
 
-const verseNumber = ({n}) => `<span class="verseNumber">${n}</span>`;
+const verseNumber = ({b, c, v}) => `<span class="versesNumber vn_${b}_${c}_${v}">${v}</span>`;
 
-const startVerses = () => `<span class="verses">`;
+const startVerses = ({b, c, v}) => `<span class="verses vs_${b}_${c}_${v}">`;
 
 const endVerses = () => `</span>`;
 
-const startVersesContent = () => `<span class="versesContent">`;
+const startVersesContent = ({b, c, v}) => `<span class="versesContent vc_${b}_${c}_${v}">`;
 
 const endVersesContent = () => `</span>`;
 
-const startBlock = ({blockType}) => `      <div class="block usfm_${blockType}">\n        `;
+const startBlock = ({blockType}) => `      <div class="block usfm_${blockType}">`;
 
-const endBlock = () => `\n      </div>\n`;
+const endBlock = () => `</div>\n`;
 
-const startCharacterSpan = ({spanType}) => `<span class="char_span usfm_${spanType}">`;
+const startCharacterSpan = ({spanType}) => `<span class="chars usfm_${spanType}">`;
 
 const endCharacterSpan = () => `</span>`;
 
