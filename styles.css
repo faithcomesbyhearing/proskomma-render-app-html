@@ -1,3 +1,5 @@
+/* Processor-specific styles */
+
 .chapterNumber {
     float: left;
     font-size: xx-large
@@ -7,8 +9,20 @@
     font-size: smaller;
     padding-right: 0.5em;
 }
+
+/* BlockTags (USFM paras)*/
+
+.usfm_d {
+    font-style: italic;
+}
+.usfm_m {
+    text-indent: 0;
+}
 .usfm_p {
     text-indent: 0.5em;
+}
+.usfm_pc {
+    text-align: center;
 }
 .usfm_q {
     margin-left: 2em;
@@ -19,6 +33,13 @@
 .usfm_q3 {
     margin-left: 4em;
 }
+.usfm_qa {
+    font-style: italic;
+    text-align: center;
+}
+
+/* Spans (USFM character-level markup) */
+
 .usfm_wj {
     color: red;
 }

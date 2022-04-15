@@ -109,6 +109,9 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
             () => true,
             (renderer, context, data) => {
                 const blockType = data.bs.payload.split("/")[1];
+                if (!renderer.config.supportedBlockTags.includes(blockType)) {
+                    console.log(`WARNING: unexpected blockTag ${blockType}`);
+                }
                 renderer.appData[renderer.appData.chapter ? 'pageContent' : 'waitingForChapter'].push(
                     htmlResources.startBlock({
                         blockType,
@@ -152,7 +155,7 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
             (context, data) => data.subType === 'start' && data.payload.startsWith("span/"),
             (renderer, context, data) => {
                 const spanType = data.payload.split('/')[1];
-                if (!['wj', 'it', 'qs', 'bd', 'sc', 'sls'].includes(spanType)) {
+                if (!renderer.config.supportedSpans.includes(spanType)) {
                     console.log(`WARNING: unexpected character-level tag ${spanType}`);
                 }
                 renderer.appData.pageContent.push(
