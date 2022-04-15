@@ -1,5 +1,6 @@
 private_data
 test_data/*/toRender.json
+test_data/*.zip
 test_data/*/chapters
 
 # IDE

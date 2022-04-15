@@ -28,7 +28,7 @@ const startVersesContent = ({b, c, v}) => `<span class="versesContent vc_${b}_${
 
 const endVersesContent = () => `</span>`;
 
-const startBlock = ({blockType}) => `      <div class="block usfm_${blockType}">`;
+const startBlock = ({blockType, isHeading}) => `      <div class="block usfm_${blockType}${isHeading ? ' heading' : ''}">`;
 
 const endBlock = () => `</div>\n`;
 

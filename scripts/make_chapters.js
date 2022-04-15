@@ -18,8 +18,9 @@ const toRender = fse.readJsonSync(toRenderPath);
 
 const config = {
     targetDir: path.resolve(path.join(srcDirPath, "chapters")),
-    processedBlockGrafts: [],
-    supportedBlockTags: ['b', 'd', 'm', 'p', 'pc', 'pi', 'q', 'q2', 'q3', 'q4', 'qa'],
+    processedBlockGrafts: ['heading'],
+    supportedBlockTags: ['b', 'd', 'm', 'mr', 'ms', 'ms2', 'p', 'pc', 'pi', 'q', 'q2', 'q3', 'q4', 'qa', 'r', 's'],
+    headingBlockTags: ['d', 'mr', 'ms', 'ms2', 'r', 's'],
     supportedSpans: ['wj', 'it', 'qs', 'bd', 'sc', 'sls'],
 };
 const processingModel = new ScriptureParaModel(toRender, config);

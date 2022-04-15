@@ -136,18 +136,23 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
             },
         );
 
-        // Start block
+        // Start block items (after blockGrafts)
         this.addAction(
-            'startBlock',
-            () => true,
+            'startItems',
+            (context) => true,
             (renderer, context, data) => {
-                const blockType = data.bs.payload.split("/")[1];
+                const blockType = context.sequenceStack[0].block.blockScope.split("/")[1];
                 if (!renderer.config.supportedBlockTags.includes(blockType)) {
                     console.log(`WARNING: unexpected blockTag ${blockType}`);
+                }
+                if (context.sequenceStack[0].type === 'main') {
+                    renderer.appData.waitingBlockGrafts.forEach(g => renderer.appData[renderer.appData.chapter ? 'pageContent' : 'waitingForChapter'].push(g));
+                    renderer.appData.waitingBlockGrafts = [];
                 }
                 renderer.appData[this.contentDestination(context)].push(
                     htmlResources.startBlock({
                         blockType,
+                        isHeading: renderer.config.headingBlockTags.includes(blockType),
                     })
                 );
                 if (renderer.appData.verses && context.sequenceStack[0].type === 'main') {
@@ -169,9 +174,9 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
             }
         );
 
-        // End block
+        // End Items in block
         this.addAction(
-            'endBlock',
+            'endItems',
             () => true,
             (renderer, context, data) => {
                 if (renderer.appData.chapter) {
@@ -186,12 +191,12 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
                     renderer.appData[this.contentDestination(context)].push(
                         htmlResources.endBlock()
                     );
-                    if (context.sequenceStack[0].type !== 'main') {
-                        renderer.appData.waitingBlockGrafts.forEach(g => renderer.appData.pageContent.push(g));
-                        renderer.appData.waitingBlockGrafts = [];
-                    }
-                }
+                } else if (context.sequenceStack[0].type !== 'main') {
+                    renderer.appData[this.contentDestination(context)].push(
+                        htmlResources.endBlock()
+                    );
             }
+        }
         );
 
         // Start character-level markup (span)
