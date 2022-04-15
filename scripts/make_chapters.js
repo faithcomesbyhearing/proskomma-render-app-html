@@ -18,6 +18,7 @@ const toRender = fse.readJsonSync(toRenderPath);
 
 const config = {
     targetDir: path.resolve(path.join(srcDirPath, "chapters")),
+    processedBlockGrafts: [],
     supportedBlockTags: ['b', 'd', 'm', 'p', 'pc', 'pi', 'q', 'q2', 'q3', 'q4', 'qa'],
     supportedSpans: ['wj', 'it', 'qs', 'bd', 'sc', 'sls'],
 };

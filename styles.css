@@ -2,7 +2,8 @@
 
 .chapterNumber {
     float: left;
-    font-size: xx-large
+    font-size: xx-large;
+    padding-right: 0.5em;
 }
 .versesNumber {
     font-weight: bold;
@@ -18,23 +19,35 @@
     font-style: italic;
 }
 .usfm_m {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
     text-indent: 0;
 }
 .usfm_p {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
     text-indent: 0.5em;
 }
 .usfm_pc {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
     text-align: center;
 }
 .usfm_pi {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
     margin-left: 2em;
     text-indent: 0.5em;
 }
 .usfm_pi2 {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
     margin-left: 3em;
     text-indent: 0.5em;
 }
 .usfm_pi3 {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
     margin-left: 4em;
     text-indent: 0.5em;
 }

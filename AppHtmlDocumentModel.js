@@ -13,8 +13,19 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
             verses: null,
             pageContent: [],
             waitingForChapter: [],
+            waitingBlockGrafts: [],
         };
         this.addActions();
+    }
+
+    contentDestination(context) {
+        if (context.sequenceStack[0].type !== 'main') {
+            return 'waitingBlockGrafts';
+        } else if (!this.appData.chapter) {
+            return 'waitingForChapter';
+        } else {
+            return 'pageContent';
+        }
     }
 
     addActions() {
@@ -30,6 +41,17 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
                     fse.removeSync(renderer.appData.docDir);
                 }
                 fse.mkdirsSync(renderer.appData.docDir);
+            }
+        );
+
+        // Follow some block grafts to secondary content
+        this.addAction(
+            'blockGraft',
+            context => () => true,
+            (renderer, context, data) => {
+                if (renderer.config.processedBlockGrafts.includes(context.sequenceStack[0].blockGraft.subType)) {
+                    renderer.renderSequenceId(data.payload);
+                }
             }
         );
 
@@ -123,12 +145,12 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
                 if (!renderer.config.supportedBlockTags.includes(blockType)) {
                     console.log(`WARNING: unexpected blockTag ${blockType}`);
                 }
-                renderer.appData[renderer.appData.chapter ? 'pageContent' : 'waitingForChapter'].push(
+                renderer.appData[this.contentDestination(context)].push(
                     htmlResources.startBlock({
                         blockType,
                     })
                 );
-                if (renderer.appData.verses) {
+                if (renderer.appData.verses && context.sequenceStack[0].type === 'main') {
                     renderer.appData.pageContent.push(
                         htmlResources.startVerses({
                             b: context.document.headers.bookCode,
@@ -153,7 +175,7 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
             () => true,
             (renderer, context, data) => {
                 if (renderer.appData.chapter) {
-                    if (renderer.appData.verses) {
+                    if (renderer.appData.verses && context.sequenceStack[0].type === 'main') {
                         renderer.appData.pageContent.push(
                             htmlResources.endVersesContent()
                         );
@@ -161,9 +183,13 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
                             htmlResources.endVerses()
                         );
                     }
-                    renderer.appData.pageContent.push(
+                    renderer.appData[this.contentDestination(context)].push(
                         htmlResources.endBlock()
                     );
+                    if (context.sequenceStack[0].type !== 'main') {
+                        renderer.appData.waitingBlockGrafts.forEach(g => renderer.appData.pageContent.push(g));
+                        renderer.appData.waitingBlockGrafts = [];
+                    }
                 }
             }
         );
@@ -177,7 +203,7 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
                 if (!renderer.config.supportedSpans.includes(spanType)) {
                     console.log(`WARNING: unexpected character-level tag ${spanType}`);
                 }
-                renderer.appData.pageContent.push(
+                renderer.appData[this.contentDestination(context)].push(
                     htmlResources.startCharacterSpan({spanType})
                 );
             }
@@ -188,7 +214,7 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
             'scope',
             (context, data) => data.subType === 'end' && data.payload.startsWith("span/"),
             (renderer, context, data) => {
-                renderer.appData.pageContent.push(
+                renderer.appData[this.contentDestination(context)].push(
                     htmlResources.endCharacterSpan({spanType: data.payload.split('/')[1]})
                 );
             }
@@ -200,9 +226,9 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
             () => true,
             (renderer, context, data) => {
                 if (["lineSpace", "eol"].includes(data.subType)) {
-                    renderer.appData.pageContent.push(" ");
+                    renderer.appData[this.contentDestination(context)].push(" ");
                 } else {
-                    renderer.appData.pageContent.push(
+                    renderer.appData[this.contentDestination(context)].push(
                         data.payload
                             .replace(/&/g, '&amp;')
                             .replace(/</g, '&lt;')
