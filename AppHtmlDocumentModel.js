@@ -1,7 +1,6 @@
 import path from 'path';
 import fse from "fs-extra";
 import {ScriptureParaDocument} from 'proskomma-render';
-import * as htmlResources from './HtmlResources.js';
 
 export default class AppHtmlDocumentModel extends ScriptureParaDocument {
 
@@ -62,11 +61,11 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
             (renderer, context, data) => {
                 renderer.appData.chapter = data.payload.split('/')[1];
                 renderer.appData.pageContent = [
-                    htmlResources.startHtml({
+                    renderer.config.htmlModule.startHtml({
                         title: `${context.document.headers.toc2 || context.document.headers.toc3 || context.document.headers.bookCode} ${renderer.appData.chapter}`
                     }),
                     ...renderer.appData.waitingForChapter,
-                    htmlResources.chapterNumber({
+                    renderer.config.htmlModule.chapterNumber({
                         b: context.document.headers.bookCode,
                         c: renderer.appData.chapter,
                     })
@@ -81,9 +80,9 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
             (context, data) => data.subType === 'end' && data.payload.startsWith("chapter/"),
             (renderer, context, data) => {
                 renderer.appData.pageContent.push(
-                    htmlResources.endBlock()
+                    renderer.config.htmlModule.endBlock()
                 );
-                renderer.appData.pageContent.push(htmlResources.endHtml());
+                renderer.appData.pageContent.push(renderer.config.htmlModule.endHtml());
                 const chapterPath = path.join(renderer.appData.docDir, `ch_${renderer.appData.chapter}.xhtml`);
                 fse.writeFileSync(chapterPath, renderer.appData.pageContent.join(''));
                 renderer.appData.pageContent = [];
@@ -98,21 +97,21 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
             (renderer, context, data) => {
                 renderer.appData.verses = data.payload.split('/')[1];
                 renderer.appData.pageContent.push(
-                    htmlResources.startVerses({
+                    renderer.config.htmlModule.startVerses({
                         b: context.document.headers.bookCode,
                         c: renderer.appData.chapter,
                         v: renderer.appData.verses,
                     })
                 );
                 renderer.appData.pageContent.push(
-                    htmlResources.verseNumber({
+                    renderer.config.htmlModule.verseNumber({
                         b: context.document.headers.bookCode,
                         c: renderer.appData.chapter,
                         v: renderer.appData.verses
                     })
                 );
                 renderer.appData.pageContent.push(
-                    htmlResources.startVersesContent({
+                    renderer.config.htmlModule.startVersesContent({
                         b: context.document.headers.bookCode,
                         c: renderer.appData.chapter,
                         v: renderer.appData.verses,
@@ -127,10 +126,10 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
             (context, data) => data.subType === 'end' && data.payload.startsWith("verses/"),
             (renderer, context, data) => {
                 renderer.appData.pageContent.push(
-                    htmlResources.endVersesContent()
+                    renderer.config.htmlModule.endVersesContent()
                 );
                 renderer.appData.pageContent.push(
-                    htmlResources.endVerses()
+                    renderer.config.htmlModule.endVerses()
                 );
                 renderer.appData.verses = null;
             },
@@ -151,21 +150,21 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
                     renderer.appData.waitingBlockGrafts = [];
                 }
                 renderer.appData[this.contentDestination(context)].push(
-                    htmlResources.startBlock({
+                    renderer.config.htmlModule.startBlock({
                         blockType,
                         isHeading: renderer.config.headingBlockTags.includes(blockType),
                     })
                 );
                 if (renderer.appData.verses && context.sequenceStack[0].type === 'main') {
                     renderer.appData.pageContent.push(
-                        htmlResources.startVerses({
+                        renderer.config.htmlModule.startVerses({
                             b: context.document.headers.bookCode,
                             c: renderer.appData.chapter,
                             v: renderer.appData.verses,
                         })
                     );
                     renderer.appData.pageContent.push(
-                        htmlResources.startVersesContent({
+                        renderer.config.htmlModule.startVersesContent({
                             b: context.document.headers.bookCode,
                             c: renderer.appData.chapter,
                             v: renderer.appData.verses,
@@ -183,18 +182,18 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
                 if (renderer.appData.chapter) {
                     if (renderer.appData.verses && context.sequenceStack[0].type === 'main') {
                         renderer.appData.pageContent.push(
-                            htmlResources.endVersesContent()
+                            renderer.config.htmlModule.endVersesContent()
                         );
                         renderer.appData.pageContent.push(
-                            htmlResources.endVerses()
+                            renderer.config.htmlModule.endVerses()
                         );
                     }
                     renderer.appData[this.contentDestination(context)].push(
-                        htmlResources.endBlock()
+                        renderer.config.htmlModule.endBlock()
                     );
                 } else if (context.sequenceStack[0].type !== 'main') {
                     renderer.appData[this.contentDestination(context)].push(
-                        htmlResources.endBlock()
+                        renderer.config.htmlModule.endBlock()
                     );
             }
         }
@@ -210,7 +209,7 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
                     console.log(`WARNING: unexpected character-level tag ${spanType}`);
                 }
                 renderer.appData[this.contentDestination(context)].push(
-                    htmlResources.startCharacterSpan({spanType})
+                    renderer.config.htmlModule.startCharacterSpan({spanType})
                 );
             }
         );
@@ -221,7 +220,7 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
             (context, data) => data.subType === 'end' && data.payload.startsWith("span/"),
             (renderer, context, data) => {
                 renderer.appData[this.contentDestination(context)].push(
-                    htmlResources.endCharacterSpan({spanType: data.payload.split('/')[1]})
+                    renderer.config.htmlModule.endCharacterSpan({spanType: data.payload.split('/')[1]})
                 );
             }
         );

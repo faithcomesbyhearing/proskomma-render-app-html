@@ -18,11 +18,13 @@ const toRender = fse.readJsonSync(toRenderPath);
 
 const config = {
     targetDir: path.resolve(path.join(srcDirPath, "chapters")),
+    htmlModulePath: '../html/DataIds.js',
     processedBlockGrafts: ['heading'],
     supportedBlockTags: ['b', 'd', 'm', 'mr', 'ms', 'ms2', 'p', 'pc', 'pi', 'q', 'q2', 'q3', 'q4', 'qa', 'r', 's'],
     headingBlockTags: ['d', 'mr', 'ms', 'ms2', 'r', 's'],
     supportedSpans: ['wj', 'it', 'qs', 'bd', 'sc', 'sls'],
 };
+config.htmlModule = await import(config.htmlModulePath);
 const processingModel = new ScriptureParaModel(toRender, config);
 const docSetModel = new AppHtmlDocSetModel(toRender, processingModel.context, config);
 const documentModel = new AppHtmlDocumentModel(docSetModel.result, docSetModel.context, docSetModel.config);
