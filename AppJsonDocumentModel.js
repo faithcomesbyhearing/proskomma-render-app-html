@@ -2,7 +2,7 @@ import path from 'path';
 import fse from "fs-extra";
 import {ScriptureParaDocument} from 'proskomma-render';
 
-export default class AppHtmlDocumentModel extends ScriptureParaDocument {
+export default class AppJsonDocumentModel extends ScriptureParaDocument {
 
     constructor(result, context, config) {
         super(result, context, config);
@@ -13,12 +13,17 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
             pageContent: [],
             waitingForChapter: [],
             waitingBlockGrafts: [],
+            currentInlineId: null,
+            currentInlineContent: [],
+            inlineGrafts: {},
         };
         this.addActions();
     }
 
     contentDestination(context) {
-        if (context.sequenceStack[0].type !== 'main') {
+        if (['footnote', 'xref'].includes(context.sequenceStack[0].type)) {
+            return 'currentInlineContent';
+        } else if (context.sequenceStack[0].type !== 'main') {
             return 'waitingBlockGrafts';
         } else if (!this.appData.chapter) {
             return 'waitingForChapter';
@@ -54,6 +59,27 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
             }
         );
 
+        // Follow some inline grafts to secondary content
+        this.addAction(
+            'inlineGraft',
+            context => () => true,
+            (renderer, context, data) => {
+                if (renderer.config.processedInlineGrafts.includes(data.subType)) {
+                    renderer.appData[this.contentDestination(context)].push(renderer.config.htmlModule.inlineAnchor({graftType: data.subType, anchorId: data.payload}));
+                    renderer.appData.currentInlineId = data.payload;
+                    renderer.appData.currentInlineContent = [];
+                    renderer.renderSequenceId(data.payload);
+                    renderer.appData.inlineGrafts[data.payload] =
+                        renderer.appData.currentInlineContent
+                            .join('')
+                            .replace(/,\]/g, "]")
+                            .replace(/\",\"/g, "")
+                    ;
+                    renderer.appData.currentInlineId = null;
+                }
+            }
+        );
+
         // Start of chapter
         this.addAction(
             'scope',
@@ -82,11 +108,22 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
                 renderer.appData.pageContent.push(
                     renderer.config.htmlModule.endBlock()
                 );
+                renderer.appData.pageContent.push(
+                    renderer.config.htmlModule.inlines({inlinesOb: renderer.appData.inlineGrafts})
+                );
                 renderer.appData.pageContent.push(renderer.config.htmlModule.endHtml());
-                const chapterPath = path.join(renderer.appData.docDir, `ch_${renderer.appData.chapter}.xhtml`);
-                fse.writeFileSync(chapterPath, renderer.appData.pageContent.join(''));
+                const chapterPath = path.join(renderer.appData.docDir, `ch_${renderer.appData.chapter}.json`);
+                fse.writeJsonSync(
+                    chapterPath,
+                    JSON.parse(renderer.appData.pageContent.join('')
+                        .replace(/,\]/g, "]")
+                        .replace(/,\}/g, "}")
+                        .replace(/\",\"/g, "")
+                ),
+                    {spaces: 2});
                 renderer.appData.pageContent = [];
                 renderer.appData.chapter = null;
+                renderer.appData.inlineGrafts = {};
             }
         );
 
@@ -195,8 +232,8 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
                     renderer.appData[this.contentDestination(context)].push(
                         renderer.config.htmlModule.endBlock()
                     );
+                }
             }
-        }
         );
 
         // Start character-level markup (span)
@@ -231,13 +268,15 @@ export default class AppHtmlDocumentModel extends ScriptureParaDocument {
             () => true,
             (renderer, context, data) => {
                 if (["lineSpace", "eol"].includes(data.subType)) {
-                    renderer.appData[this.contentDestination(context)].push(" ");
+                    renderer.appData[this.contentDestination(context)].push("\" \",");
                 } else {
                     renderer.appData[this.contentDestination(context)].push(
+                        '"' +
                         data.payload
                             .replace(/&/g, '&amp;')
                             .replace(/</g, '&lt;')
-                            .replace(/>/g, '&gt;')
+                            .replace(/>/g, '&gt;') +
+                        '",',
                     )
                     ;
                 }

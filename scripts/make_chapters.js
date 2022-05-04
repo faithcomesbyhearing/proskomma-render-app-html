@@ -3,7 +3,7 @@ import path from 'path';
 
 import { ScriptureParaModel } from 'proskomma-render';
 import AppHtmlDocSetModel from "../AppHtmlDocSetModel.js";
-import AppHtmlDocumentModel from "../AppHtmlDocumentModel.js";
+import AppJsonDocumentModel from "../AppJsonDocumentModel.js";
 
 if (process.argv.length !== 3) {
     throw new Error("USAGE: node make_chapter.js <srcDirPath>");
@@ -18,16 +18,17 @@ const toRender = fse.readJsonSync(toRenderPath);
 
 const config = {
     targetDir: path.resolve(path.join(srcDirPath, "chapters")),
-    htmlModulePath: '../html/DataIds.js',
+    htmlModulePath: '../html/json.js',
     processedBlockGrafts: ['heading'],
-    supportedBlockTags: ['b', 'd', 'm', 'mr', 'ms', 'ms2', 'p', 'pc', 'pi', 'q', 'q2', 'q3', 'q4', 'qa', 'r', 's'],
+    processedInlineGrafts: ['footnote', 'xref'],
+    supportedBlockTags: ['b', 'd', 'm', 'mr', 'ms', 'ms2', 'p', 'pc', 'pi', 'q', 'q2', 'q3', 'q4', 'qa', 'r', 's', 'x'],
     headingBlockTags: ['d', 'mr', 'ms', 'ms2', 'r', 's'],
-    supportedSpans: ['wj', 'it', 'qs', 'bd', 'sc', 'sls'],
+    supportedSpans: ['wj', 'it', 'qs', 'bd', 'sc', 'sls', 'xo', 'xt'],
 };
 config.htmlModule = await import(config.htmlModulePath);
 const processingModel = new ScriptureParaModel(toRender, config);
 const docSetModel = new AppHtmlDocSetModel(toRender, processingModel.context, config);
-const documentModel = new AppHtmlDocumentModel(docSetModel.result, docSetModel.context, docSetModel.config);
+const documentModel = new AppJsonDocumentModel(docSetModel.result, docSetModel.context, docSetModel.config);
 docSetModel.addDocumentModel('default', documentModel);
 processingModel.addDocSetModel('default', docSetModel);
 
